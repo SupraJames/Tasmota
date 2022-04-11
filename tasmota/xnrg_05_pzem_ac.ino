@@ -45,6 +45,7 @@ struct PZEMAC {
   uint8_t phase = 0;
   uint8_t address = 0;
   uint8_t address_step = ADDR_IDLE;
+  uint8_t reset = 0;
 } PzemAc;
 
 void PzemAcEverySecond(void)
@@ -97,6 +98,10 @@ void PzemAcEverySecond(void)
     if (ADDR_SEND == PzemAc.address_step) {
       PzemAcModbus->Send(0xF8, 0x06, 0x0002, (uint16_t)PzemAc.address);
       PzemAc.address_step--;
+    } else if (PzemAc.reset) {
+      AddLog(LOG_LEVEL_DEBUG, PSTR("PAC: Sending reset command for PzemAc %d"), PZEM_AC_DEVICE_ADDRESS + PzemAc.phase);
+      PzemAcModbus->Send(PZEM_AC_DEVICE_ADDRESS + PzemAc.phase, 0x42);
+      PzemAc.reset = 0;
     } else {
       PzemAcModbus->Send(PZEM_AC_DEVICE_ADDRESS + PzemAc.phase, 0x04, 0, 10);
     }
@@ -139,6 +144,8 @@ bool PzemAcCommand(void)
   if (CMND_MODULEADDRESS == Energy.command_code) {
     PzemAc.address = XdrvMailbox.payload;  // Valid addresses are 1, 2 and 3
     PzemAc.address_step = ADDR_SEND;
+  } else if (CMND_RESETPZEM == Energy.command_code) {
+    PzemAc.reset = 1;
   }
   else serviced = false;  // Unknown command
 

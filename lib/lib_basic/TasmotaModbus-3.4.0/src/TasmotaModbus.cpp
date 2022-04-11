@@ -73,6 +73,22 @@ void TasmotaModbus::Send(uint8_t device_address, uint8_t function_code, uint16_t
   write(frame, sizeof(frame));
 }
 
+void TasmotaModbus::Send(uint8_t device_address, uint8_t function_code)
+{
+  uint8_t frame[4];
+
+  mb_address = device_address;  // Save address for receipt check
+
+  frame[0] = mb_address;        // 0xFE default device address or dedicated like 0x01
+  frame[1] = function_code;
+  uint16_t crc = CalculateCRC(frame, 2);
+  frame[2] = (uint8_t)(crc);
+  frame[3] = (uint8_t)(crc >> 8);
+
+  flush();
+  write(frame, sizeof(frame));
+}
+
 bool TasmotaModbus::ReceiveReady()
 {
   return (available() > 4);

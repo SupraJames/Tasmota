@@ -40,14 +40,15 @@
 #define D_CMND_FREQUENCYCAL "FrequencyCal"
 #define D_CMND_TARIFF "Tariff"
 #define D_CMND_MODULEADDRESS "ModuleAddress"
+#define D_CMND_RESETPZEM "ResetPzem"
 
 enum EnergyCommands {
   CMND_POWERCAL, CMND_VOLTAGECAL, CMND_CURRENTCAL, CMND_FREQUENCYCAL,
-  CMND_POWERSET, CMND_VOLTAGESET, CMND_CURRENTSET, CMND_FREQUENCYSET, CMND_MODULEADDRESS, CMND_ENERGYCONFIG };
+  CMND_POWERSET, CMND_VOLTAGESET, CMND_CURRENTSET, CMND_FREQUENCYSET, CMND_MODULEADDRESS, CMND_ENERGYCONFIG, CMND_RESETPZEM };
 
 const char kEnergyCommands[] PROGMEM = "|"  // No prefix
   D_CMND_POWERCAL "|" D_CMND_VOLTAGECAL "|" D_CMND_CURRENTCAL "|" D_CMND_FREQUENCYCAL "|"
-  D_CMND_POWERSET "|" D_CMND_VOLTAGESET "|" D_CMND_CURRENTSET "|" D_CMND_FREQUENCYSET "|" D_CMND_MODULEADDRESS "|" D_CMND_ENERGYCONFIG "|"
+  D_CMND_POWERSET "|" D_CMND_VOLTAGESET "|" D_CMND_CURRENTSET "|" D_CMND_FREQUENCYSET "|" D_CMND_MODULEADDRESS "|" D_CMND_ENERGYCONFIG "|" D_CMND_RESETPZEM "|"
 #ifdef USE_ENERGY_MARGIN_DETECTION
   D_CMND_POWERDELTA "|" D_CMND_POWERLOW "|" D_CMND_POWERHIGH "|" D_CMND_VOLTAGELOW "|" D_CMND_VOLTAGEHIGH "|" D_CMND_CURRENTLOW "|" D_CMND_CURRENTHIGH "|"
 #ifdef USE_ENERGY_POWER_LIMIT
@@ -60,7 +61,7 @@ const char kEnergyCommands[] PROGMEM = "|"  // No prefix
 
 void (* const EnergyCommand[])(void) PROGMEM = {
   &CmndPowerCal, &CmndVoltageCal, &CmndCurrentCal, &CmndFrequencyCal,
-  &CmndPowerSet, &CmndVoltageSet, &CmndCurrentSet, &CmndFrequencySet, &CmndModuleAddress, &CmndEnergyConfig,
+  &CmndPowerSet, &CmndVoltageSet, &CmndCurrentSet, &CmndFrequencySet, &CmndModuleAddress, &CmndEnergyConfig, &CmndResetPzem,
 #ifdef USE_ENERGY_MARGIN_DETECTION
   &CmndPowerDelta, &CmndPowerLow, &CmndPowerHigh, &CmndVoltageLow, &CmndVoltageHigh, &CmndCurrentLow, &CmndCurrentHigh,
 #ifdef USE_ENERGY_POWER_LIMIT
@@ -832,6 +833,13 @@ void CmndModuleAddress(void) {
 
 void CmndEnergyConfig(void) {
   Energy.command_code = CMND_ENERGYCONFIG;
+  if (XnrgCall(FUNC_COMMAND)) {
+    ResponseCmndDone();
+  }
+}
+
+void CmndResetPzem(void) {
+  Energy.command_code = CMND_RESETPZEM;
   if (XnrgCall(FUNC_COMMAND)) {
     ResponseCmndDone();
   }
